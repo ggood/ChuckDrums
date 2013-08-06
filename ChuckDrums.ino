@@ -5,7 +5,7 @@
 
 #define MIDI_CHANNEL 1
 #define DELAY 80
-#define Z_THRESHOLD 300
+#define Z_THRESHOLD 500
 
 // The nunchuck controllers
 WiiChuckTeensy3 chuckL = WiiChuckTeensy3(0);

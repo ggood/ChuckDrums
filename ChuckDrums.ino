@@ -1,60 +1,106 @@
+#include <i2c_t3.h>
 #include <math.h>
 
-#include "Wire.h"
-#include "WiiChuck.h"
+#include "WiiChuckTeensy3.h"
 
 #define MIDI_CHANNEL 1
-#define DELAY 100
+#define DELAY 80
+#define Z_THRESHOLD 300
 
-WiiChuck chuck = WiiChuck(); // The nunchuck controller
+// The nunchuck controllers
+WiiChuckTeensy3 chuckL = WiiChuckTeensy3(0);
+WiiChuckTeensy3 chuckR = WiiChuckTeensy3(1);
 
-int xVal, yVal, zVal, zSum, zAvg;
-int zValues[10] = {0};
-byte note;
-boolean cButton, zButton;
-int i;
-unsigned long noteOnTime;
+int xValL, yValL, zValL, zSumL, zAvgL;
+int zValuesL[10] = {0};
+int xValR, yValR, zValR, zSumR, zAvgR;
+int zValuesR[10] = {0};
+byte noteL, noteR;
+boolean cButtonL, zButtonL;
+boolean cButtonR, zButtonR;
+int iL, iR;
+unsigned long noteOnTimeL;
+unsigned long noteOnTimeR;
 
 void setup() {
-  cButton = zButton = false;
-  note = 40;
-  chuck.begin();  // Initialize the nunchuck
+  cButtonL = zButtonL = false;
+  cButtonR = zButtonR = false;
+  noteL = 40;
+  noteR = 44;
+  // Initialize the nunchucks
+  chuckL.begin();
+  chuckR.begin();
 }
 
 
 void loop() {
-  chuck.update(); 
+  chuckL.update(); 
   delay(1);
-  zVal = chuck.readAccelZ();
-  zSum -= zValues[i];
-  zSum += zVal;
-  zValues[i] = zVal;
-  i = (i + 1) % 10;
-  zAvg = zSum / 10;
-  if (zAvg > 500) {
-    if (millis() - noteOnTime > DELAY) {
-      usbMIDI.sendNoteOn(note, 100, MIDI_CHANNEL);
-      usbMIDI.sendNoteOff(note, 100, MIDI_CHANNEL);
-      noteOnTime = millis();
+  zValL = chuckL.readAccelZ();
+  zSumL -= zValuesL[iL];
+  zSumL += zValL;
+  zValuesL[iL] = zValL;
+  iL = (iL + 1) % 10;
+  zAvgL = zSumL / 10;
+  if (zAvgL > Z_THRESHOLD) {
+    if (millis() - noteOnTimeL > DELAY) {
+      usbMIDI.sendNoteOn(noteL, 100, MIDI_CHANNEL);
+      usbMIDI.sendNoteOff(noteL, 100, MIDI_CHANNEL);
+      noteOnTimeL = millis();
     }
-  } 
-  
-  if (chuck.cPressed()) {
-    if (!cButton) {
-      // Rising edge
-      note++;
-      cButton = true;
-    }
-  } else {
-    cButton = false;
   }
-  if (chuck.zPressed()) {
-    if (!zButton) {
+ 
+ chuckR.update(); 
+  delay(1);
+  zValR = chuckR.readAccelZ();
+  zSumR -= zValuesR[iR];
+  zSumR += zValR;
+  zValuesR[iR] = zValR;
+  iR = (iR + 1) % 10;
+  zAvgR = zSumR / 10;
+  if (zAvgR > Z_THRESHOLD) {
+    if (millis() - noteOnTimeR > DELAY) {
+      usbMIDI.sendNoteOn(noteR, 100, MIDI_CHANNEL);
+      usbMIDI.sendNoteOff(noteR, 100, MIDI_CHANNEL);
+      noteOnTimeR = millis();
+    }
+  }  
+  
+  if (chuckL.cPressed()) {
+    if (!cButtonL) {
       // Rising edge
-      note--;
-      zButton = true;
+      noteL++;
+      cButtonL = true;
     }
   } else {
-    zButton = false;
+    cButtonL = false;
+  }
+  if (chuckL.zPressed()) {
+    if (!zButtonL) {
+      // Rising edge
+      noteL--;
+      zButtonL = true;
+    }
+  } else {
+    zButtonL = false;
+  }
+  
+  if (chuckR.cPressed()) {
+    if (!cButtonR) {
+      // Rising edge
+      noteR++;
+      cButtonR = true;
+    }
+  } else {
+    cButtonR = false;
+  }
+  if (chuckR.zPressed()) {
+    if (!zButtonR) {
+      // Rising edge
+      noteR--;
+      zButtonR = true;
+    }
+  } else {
+    zButtonR = false;
   }
 }

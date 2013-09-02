@@ -42,6 +42,11 @@ void loop() {
   zValuesL[iL] = zValL;
   iL = (iL + 1) % 10;
   zAvgL = zSumL / 10;
+  // Instead of this, detect when zAvgL is within some distance
+  // of zero, and trigger.
+  // Also, in the loop, watch zValL, which should should be
+  // > gravity if going down and < gravity if going up. Only
+  // trigger if it looks like we're going down.
   if (zAvgL > Z_THRESHOLD) {
     if (millis() - noteOnTimeL > DELAY) {
       usbMIDI.sendNoteOn(noteL, 100, MIDI_CHANNEL);

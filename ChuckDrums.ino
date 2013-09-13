@@ -23,6 +23,7 @@ unsigned long noteOnTimeL;
 unsigned long noteOnTimeR;
 
 void setup() {
+  delay(2000);
   cButtonL = zButtonL = false;
   cButtonR = zButtonR = false;
   noteL = 40;
